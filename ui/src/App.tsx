@@ -25,6 +25,8 @@ async function initializeSdk(walllet: { runner: any; address: string }) {
 }
 
 function App() {
+  const [wallet, setWallet] = useState<{ runner: any; address: string } | null>(null);
+  const [sdk, setSdk] = useState<Sdk | null>(null);
   const [avatar, setAvatar] = useState<Avatar | null>(null);
 
   const connectWallet = async () => {
@@ -39,13 +41,25 @@ function App() {
     if (!wallet) {
       throw new Error("No wallet found");
     }
+    setWallet(wallet);
+  };
 
-    const sdk = await initializeSdk(wallet);
+  const inializeSdk = async (wallet: { runner: any; address: string }) => {
+    const theSdk = await initializeSdk(wallet);
+    setSdk(theSdk);
+  };
 
+  const initializeAvatar = async (sdk: Sdk, wallet: { runner: any; address: string }) => {
     const avatar = await sdk.getAvatar(wallet.address);
-
     setAvatar(avatar);
   };
+
+  const testFunc = async (sdk: Sdk) => {
+    if (avatar?.address) {
+      const res = sdk.v2Hub?.safeTransferFrom(avatar?.address, "0x0xF83091FAa3AF253d4f3037f8b91456315AB93319", "0x73299F44aE7997e5676481369Ac6086B2d3A9b94", 1, "0x")
+      console.log(res);
+    }
+  }
 
   const lastUpdated = avatar?.avatarInfo?.timestamp || 0;
   const lastUpdatedDaysOrHoursOrMinutesAgo: string = Date.now() - lastUpdated * 1000 > 86400000 ? `${Math.floor((Date.now() - lastUpdated * 1000) / 86400000)} days ago` : Date.now() - lastUpdated * 1000 > 3600000 ? `${Math.floor((Date.now() - lastUpdated * 1000) / 3600000)} hours ago` : `${Math.floor((Date.now() - lastUpdated * 1000) / 60000)} minutes ago`;
@@ -64,15 +78,39 @@ function App() {
 
   return (
     <div className="flex justify-center items-center h-full w-full">
-      {avatar ? (
-        avatarData
-      ) : (
-        <button
-          className="text-3xl font-bold"
-          onClick={() => void connectWallet()}
-        >
-          Connect Wallet
+      {!wallet ? (
+        <button className="text-3xl font-bold" onClick={connectWallet}>
+          Connect wallet
         </button>
+      ) : (
+        <p>Wallet connected: {wallet.address}</p>
+      )}
+      {wallet && !sdk ? (
+        <button className="text-3xl font-bold" onClick={() => inializeSdk(wallet)}>
+          Initialize SDK
+        </button>
+      ) : (
+        sdk && <p>SDK initialized</p>
+      )}
+      {sdk && !avatar && wallet ? (
+        <button className="text-3xl font-bold" onClick={() => initializeAvatar(sdk, wallet)}>
+          Initialize Avatar
+        </button>
+      ) : (
+        avatar && <p>Avatar initialized</p>
+      )}
+      {avatar && sdk ? (
+        <>
+          {avatarData}
+          {
+            // TODO: input element for address to check if can transfer
+          }
+          <button className="text-3xl font-bold" onClick={() => testFunc(sdk)}>
+            Test
+          </button>
+        </>
+      ) : (
+        <p>No avatar :(</p>
       )}
     </div>
   );
