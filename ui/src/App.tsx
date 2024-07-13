@@ -1,4 +1,4 @@
-import { AvatarRow, ChainConfig, Sdk } from "@circles-sdk/sdk";
+import { Avatar, ChainConfig, Sdk } from "@circles-sdk/sdk";
 import { BrowserProvider } from "ethers";
 import { useState } from "react";
 
@@ -25,7 +25,7 @@ async function initializeSdk(walllet: { runner: any; address: string }) {
 }
 
 function App() {
-  const [avatarType, setAvatarType] = useState<AvatarRow | undefined>();
+  const [avatar, setAvatar] = useState<Avatar | null>(null);
 
   const connectWallet = async () => {
     const provider = getBrowserProvider();
@@ -42,15 +42,30 @@ function App() {
 
     const sdk = await initializeSdk(wallet);
 
-    const avatarInfo = await sdk.getAvatar(wallet.address);
+    const avatar = await sdk.getAvatar(wallet.address);
 
-    setAvatarType(avatarInfo.avatarInfo);
+    setAvatar(avatar);
   };
+
+  const lastUpdated = avatar?.avatarInfo?.timestamp || 0;
+  const lastUpdatedDaysOrHoursOrMinutesAgo: string = Date.now() - lastUpdated * 1000 > 86400000 ? `${Math.floor((Date.now() - lastUpdated * 1000) / 86400000)} days ago` : Date.now() - lastUpdated * 1000 > 3600000 ? `${Math.floor((Date.now() - lastUpdated * 1000) / 3600000)} hours ago` : `${Math.floor((Date.now() - lastUpdated * 1000) / 60000)} minutes ago`;
+
+  const avatarData = (
+    <div>
+      <p>Avatar address: {avatar?.address}</p>
+      <p>Avatar (info) address: {avatar?.avatarInfo?.avatar}</p>
+      <p>Avatar (info) V1: {JSON.stringify(avatar?.avatarInfo?.hasV1)}</p>
+      <p>Avatar v1 stopped: {JSON.stringify(avatar?.avatarInfo?.v1Stopped)}</p>
+      <p>last updated human readable: {lastUpdatedDaysOrHoursOrMinutesAgo}</p>
+      <p>v1 token address: {avatar?.avatarInfo?.v1Token}</p>
+      <p>token address: {avatar?.avatarInfo?.tokenId}</p>
+    </div>
+  );
 
   return (
     <div className="flex justify-center items-center h-full w-full">
-      {avatarType ? (
-        <p className="text-3xl font-bold">Avatar type: {avatarType.version}</p>
+      {avatar ? (
+        avatarData
       ) : (
         <button
           className="text-3xl font-bold"
