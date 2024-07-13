@@ -11,9 +11,9 @@ export const BottomNavBar = () => {
 
   return (
     <div className="btm-nav">
-      <button className={checkActivePath("/")}>
+      <button className={checkActivePath("/home")}>
         <Link
-          to="/"
+          to="/home"
           activeProps={{
             className: "font-bold",
           }}

@@ -18,7 +18,7 @@ import { Route as rootRoute } from './routes/__root'
 
 const StakeLazyImport = createFileRoute('/stake')()
 const SendLazyImport = createFileRoute('/send')()
-const IndexLazyImport = createFileRoute('/')()
+const HomeLazyImport = createFileRoute('/home')()
 
 // Create/Update Routes
 
@@ -32,20 +32,20 @@ const SendLazyRoute = SendLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/send.lazy').then((d) => d.Route))
 
-const IndexLazyRoute = IndexLazyImport.update({
-  path: '/',
+const HomeLazyRoute = HomeLazyImport.update({
+  path: '/home',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/home.lazy').then((d) => d.Route))
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeLazyImport
       parentRoute: typeof rootRoute
     }
     '/send': {
@@ -68,7 +68,7 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export const routeTree = rootRoute.addChildren({
-  IndexLazyRoute,
+  HomeLazyRoute,
   SendLazyRoute,
   StakeLazyRoute,
 })
@@ -81,13 +81,13 @@ export const routeTree = rootRoute.addChildren({
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
+        "/home",
         "/send",
         "/stake"
       ]
     },
-    "/": {
-      "filePath": "index.lazy.tsx"
+    "/home": {
+      "filePath": "home.lazy.tsx"
     },
     "/send": {
       "filePath": "send.lazy.tsx"

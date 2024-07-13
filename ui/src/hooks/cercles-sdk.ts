@@ -2,6 +2,7 @@ import { Avatar, ChainConfig, Sdk } from "@circles-sdk/sdk";
 import { getBrowserProvider } from "./util";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../store";
+import { Profile } from "../types";
 
 //TODO: Make these env variables
 export const chainConfig: ChainConfig = {
@@ -76,11 +77,55 @@ export const useCerclesSdk = () => {
 
       const avatarNew = await sdk.getAvatar(wallet.address);
       setAvatar(avatarNew);
+      setError(null);
       return avatarNew;
     } catch (error) {
       setError("Failed to get avatar");
     }
   };
 
-  return { getAvatar, connectWallet, isLoading, error };
+  const getTransactions = async () => {
+    if (!avatar) return;
+    setIsLoading(true);
+
+    try {
+      const transactions = await avatar.getTransactionHistory(1);
+      return transactions;
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getProfile = async () => {
+    if (!avatar) return;
+    setIsLoading(true);
+
+    try {
+      const balance = await avatar.getTotalBalance();
+      const type = avatar.avatarInfo?.type || "Unknown";
+
+      const profile: Profile = {
+        address: avatar.address,
+        type: type,
+        balance: balance,
+      };
+      console.log("profile", profile);
+      setError(null);
+      return profile;
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return {
+    getProfile,
+    getTransactions,
+    getAvatar,
+    connectWallet,
+    isLoading,
+    error,
+  };
 };
