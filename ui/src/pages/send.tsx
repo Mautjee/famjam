@@ -1,5 +1,5 @@
 import { Avatar, ChainConfig, Sdk } from "@circles-sdk/sdk";
-import { BrowserProvider } from "ethers";
+import { AddressLike, BigNumberish, BrowserProvider, BytesLike, formatEther, getAddress, parseEther } from "ethers";
 import { useState } from "react";
 
 const chainConfig: ChainConfig = {
@@ -61,14 +61,26 @@ export const Send = () => {
 
   const testFunc = async (sdk: Sdk) => {
     if (avatar?.address) {
-      const res = sdk.v2Hub?.safeTransferFrom(
-        avatar?.address,
-        "0x0xF83091FAa3AF253d4f3037f8b91456315AB93319",
-        "0x73299F44aE7997e5676481369Ac6086B2d3A9b94",
-        1,
-        "0x",
-      );
-      console.log(res);
+      const from: AddressLike = avatar?.address;
+      const to: AddressLike = getAddress("0xF83091FAa3AF253d4f3037f8b91456315AB93319");
+      const id: BigNumberish = BigInt("0x73299F44aE7997e5676481369Ac6086B2d3A9b94");
+      const amount: BigNumberish = 1;
+      const data: BytesLike = Uint8Array.of(0);
+
+      console.log(`trying to transfer ${amount} of ${id}\nfrom ${from}\nto ${to}`);
+
+      try {
+        const res = await sdk.v2Hub?.safeTransferFrom(
+          from,
+          to,
+          id,
+          amount,
+          data,
+        );
+        console.log(res);
+      } catch (e) {
+        console.error((e as Error).stack);
+      }
     }
   };
 
