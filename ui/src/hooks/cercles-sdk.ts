@@ -1,7 +1,6 @@
 import { Avatar, ChainConfig, Sdk } from "@circles-sdk/sdk";
 import { getBrowserProvider } from "./util";
-import { useState } from "react";
-import { ConnectedWallet } from "../types";
+import { useEffect, useState } from "react";
 import { useAppStore } from "../store";
 
 //TODO: Make these env variables
@@ -16,55 +15,72 @@ export const useCerclesSdk = () => {
   const connected = useAppStore((state) => state.connected);
   const wallet = useAppStore((state) => state.wallet);
   const sdk = useAppStore((state) => state.sdk);
+
+  const setReady = useAppStore((state) => state.setReady);
   const setConnected = useAppStore((state) => state.setConnected);
   const setWallet = useAppStore((state) => state.setWallet);
   const setSdk = useAppStore((state) => state.setSdk);
 
   const [avatar, setAvatar] = useState<Avatar | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false); // new loading state
+  const [error, setError] = useState<string | null>(null);
+  const [userInteraction, setUserInteraction] = useState(false);
+
+  const initialized = sdk && connected && wallet;
+
+  // initialization logic
+  useEffect(() => {
+    const initializeSdk = async () => {
+      setIsLoading(true);
+
+      if (!connected && !userInteraction) {
+        connectWallet();
+      }
+      try {
+        if (sdk) {
+          return;
+        } // return early to avoid multiple calls
+        if (!wallet) return;
+        const cerclesSdk = new Sdk(chainConfig, wallet);
+        setSdk(cerclesSdk);
+      } catch (error) {
+        setError((error as Error).message || "Failed to initialize");
+      } finally {
+        setIsLoading(false);
+        initialized ? setReady(true) : setReady(false);
+      }
+    };
+    initializeSdk();
+  }, [connected, sdk, wallet, setSdk]);
 
   const connectWallet = async () => {
-    const provider = getBrowserProvider();
-    const signer = await provider.getSigner();
-
-    const wallet = {
-      runner: signer,
-      address: await signer.getAddress(),
-    };
-
-    if (!wallet) {
-      throw new Error("No wallet found");
+    setUserInteraction(true);
+    try {
+      const provider = getBrowserProvider();
+      const signer = await provider.getSigner();
+      const wallet = {
+        runner: signer,
+        address: await signer.getAddress(),
+      };
+      setWallet(wallet);
+      setConnected(true);
+    } catch (err) {
+      setError("Failed to connect wallet");
     }
-
-    setWallet(wallet);
-    setConnected(true);
-  };
-
-  const initialize = async () => {
-    if (!connected) {
-      await connectWallet();
-    }
-
-    if (!sdk) return;
-    if (!wallet) return;
-
-    const cerclesSdk = new Sdk(chainConfig, wallet);
-    if (!cerclesSdk) {
-      throw new Error("Failed to initialize SDK");
-    }
-    setSdk(cerclesSdk);
   };
 
   const getAvatar = async () => {
     if (!sdk || !wallet) return;
-    if (avatar) return avatar;
+    try {
+      if (avatar) return avatar;
 
-    const avatarNew = await sdk.getAvatar(wallet.address);
-    if (!avatarNew) {
-      return undefined;
+      const avatarNew = await sdk.getAvatar(wallet.address);
+      setAvatar(avatarNew);
+      return avatarNew;
+    } catch (error) {
+      setError("Failed to get avatar");
     }
-    setAvatar(avatarNew);
-    return avatarNew;
   };
 
-  return { getAvatar, initialize };
+  return { getAvatar, connectWallet, isLoading, error };
 };
