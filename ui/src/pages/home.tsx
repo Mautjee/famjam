@@ -40,7 +40,7 @@ export const HomePage = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col gap-4 bg-gray-100">
+    <div className="h-screen overflow-scroll flex flex-col gap-4 bg-gray-100">
       <div className="flex flex-col gap-4">
         <p className="text-3xl font-bold">Your Profile</p>
         <Stat title="Address" value={profile.address} desc="Your address" />

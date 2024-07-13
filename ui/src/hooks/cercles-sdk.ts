@@ -89,7 +89,7 @@ export const useCerclesSdk = () => {
     setIsLoading(true);
 
     try {
-      const transactions = await avatar.getTransactionHistory(1);
+      const transactions = await avatar.getTransactionHistory(5);
       return transactions;
     } catch (error) {
       setError((error as Error).message);

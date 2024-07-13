@@ -38,7 +38,9 @@ export const PersonalTransactions: FC<TransactionProps> = ({
 
   return (
     <div>
-      <div>{getTransactions(transactions)}</div>
+      <div className="col-span-3 row-span-3">
+        {getTransactions(transactions)}
+      </div>
     </div>
   );
 };
