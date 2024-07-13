@@ -1,13 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { redirect } from "@tanstack/react-router";
+import { HomePage } from "../pages";
 
 export const Route = createLazyFileRoute("/")({
-  component: IndexComponent,
+  component: HomePage,
 });
-
-function IndexComponent() {
-  throw redirect({
-    to: "/home",
-  });
-}
-
