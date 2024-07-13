@@ -24,8 +24,10 @@ async function initializeSdk(walllet: { runner: any; address: string }) {
   return new Sdk(chainConfig, walllet);
 }
 
-function App() {
-  const [wallet, setWallet] = useState<{ runner: any; address: string } | null>(null);
+export const Send = () => {
+  const [wallet, setWallet] = useState<{ runner: any; address: string } | null>(
+    null,
+  );
   const [sdk, setSdk] = useState<Sdk | null>(null);
   const [avatar, setAvatar] = useState<Avatar | null>(null);
 
@@ -49,20 +51,34 @@ function App() {
     setSdk(theSdk);
   };
 
-  const initializeAvatar = async (sdk: Sdk, wallet: { runner: any; address: string }) => {
+  const initializeAvatar = async (
+    sdk: Sdk,
+    wallet: { runner: any; address: string },
+  ) => {
     const avatar = await sdk.getAvatar(wallet.address);
     setAvatar(avatar);
   };
 
   const testFunc = async (sdk: Sdk) => {
     if (avatar?.address) {
-      const res = sdk.v2Hub?.safeTransferFrom(avatar?.address, "0x0xF83091FAa3AF253d4f3037f8b91456315AB93319", "0x73299F44aE7997e5676481369Ac6086B2d3A9b94", 1, "0x")
+      const res = sdk.v2Hub?.safeTransferFrom(
+        avatar?.address,
+        "0x0xF83091FAa3AF253d4f3037f8b91456315AB93319",
+        "0x73299F44aE7997e5676481369Ac6086B2d3A9b94",
+        1,
+        "0x",
+      );
       console.log(res);
     }
-  }
+  };
 
   const lastUpdated = avatar?.avatarInfo?.timestamp || 0;
-  const lastUpdatedDaysOrHoursOrMinutesAgo: string = Date.now() - lastUpdated * 1000 > 86400000 ? `${Math.floor((Date.now() - lastUpdated * 1000) / 86400000)} days ago` : Date.now() - lastUpdated * 1000 > 3600000 ? `${Math.floor((Date.now() - lastUpdated * 1000) / 3600000)} hours ago` : `${Math.floor((Date.now() - lastUpdated * 1000) / 60000)} minutes ago`;
+  const lastUpdatedDaysOrHoursOrMinutesAgo: string =
+    Date.now() - lastUpdated * 1000 > 86400000
+      ? `${Math.floor((Date.now() - lastUpdated * 1000) / 86400000)} days ago`
+      : Date.now() - lastUpdated * 1000 > 3600000
+        ? `${Math.floor((Date.now() - lastUpdated * 1000) / 3600000)} hours ago`
+        : `${Math.floor((Date.now() - lastUpdated * 1000) / 60000)} minutes ago`;
 
   const avatarData = (
     <div>
@@ -77,7 +93,7 @@ function App() {
   );
 
   return (
-    <div className="flex justify-center items-center h-full w-full">
+    <div className="flex flex-col justify-center items-center h-full w-full">
       {!wallet ? (
         <button className="text-3xl font-bold" onClick={connectWallet}>
           Connect wallet
@@ -86,14 +102,20 @@ function App() {
         <p>Wallet connected: {wallet.address}</p>
       )}
       {wallet && !sdk ? (
-        <button className="text-3xl font-bold" onClick={() => inializeSdk(wallet)}>
+        <button
+          className="text-3xl font-bold"
+          onClick={() => inializeSdk(wallet)}
+        >
           Initialize SDK
         </button>
       ) : (
         sdk && <p>SDK initialized</p>
       )}
       {sdk && !avatar && wallet ? (
-        <button className="text-3xl font-bold" onClick={() => initializeAvatar(sdk, wallet)}>
+        <button
+          className="text-3xl font-bold"
+          onClick={() => initializeAvatar(sdk, wallet)}
+        >
           Initialize Avatar
         </button>
       ) : (
@@ -114,6 +136,4 @@ function App() {
       )}
     </div>
   );
-}
-
-export default App;
+};

@@ -1,9 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { Send } from "../pages";
 
 export const Route = createLazyFileRoute("/send")({
   component: Send,
 });
-
-function Send() {
-  return <div className="p-2">Hello from Send!</div>;
-}
